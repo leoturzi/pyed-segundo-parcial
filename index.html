@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programación y Estructuras de Datos</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --side-bg: #1f2430;
+    --side-text: #c9d0dc;
+    --side-muted: #8b93a3;
+    --side-hover: #2b3242;
+    --side-active: #3b82f6;
+    --text: #1d2330;
+    --muted: #5d6677;
+    --border: #e1e5ec;
+    --accent: #2563eb;
+    --side-w: 310px;
+    --head-h: 76px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c;
+      --surface: #1a1f29;
+      --side-bg: #0d1017;
+      --side-hover: #1a2030;
+      --text: #e6e9ef;
+      --muted: #97a0b0;
+      --border: #2a3140;
+      --accent: #60a5fa;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c; --surface: #1a1f29; --side-bg: #0d1017; --side-hover: #1a2030;
+    --text: #e6e9ef; --muted: #97a0b0; --border: #2a3140; --accent: #60a5fa;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--side-active); outline-offset: 2px; }
+
+  .app { display: flex; height: 100dvh; }
+
+  /* ---------- Barra lateral ---------- */
+  .sidebar {
+    width: var(--side-w);
+    flex: none;
+    background: var(--side-bg);
+    color: var(--side-text);
+    display: flex;
+    flex-direction: column;
+    z-index: 30;
+  }
+  .brand {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .brand small { display: block; color: var(--side-muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  .brand strong { display: block; color: #fff; font-size: 17px; line-height: 1.3; margin-top: 4px; }
+
+  .brand .credit { display: block; margin-top: 6px; font-size: 11.5px; line-height: 1.35; color: var(--side-muted); }
+  .nav { flex: 1; overflow-y: auto; padding: 10px 10px 24px; }
+
+  .unit-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px;
+    background: none; border: 0; border-radius: 8px;
+    color: #fff; text-align: left; font-weight: 600; line-height: 1.3;
+  }
+  .unit-btn:hover { background: var(--side-hover); }
+  .unit-btn .num {
+    flex: none; width: 26px; height: 26px; border-radius: 6px;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.1); font-size: 13px;
+  }
+  .unit-btn .label { flex: 1; }
+  .unit-btn .label small { display: block; color: var(--side-muted); font-weight: 400; font-size: 12px; }
+  .unit-btn .chev { flex: none; transition: transform .2s; color: var(--side-muted); }
+  .unit-btn[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .unit.current > .unit-btn .num { background: var(--side-active); }
+
+  .unit-panel { display: none; padding: 2px 0 10px 18px; }
+  .unit-btn[aria-expanded="true"] + .unit-panel { display: block; }
+
+  .group-title {
+    margin: 10px 8px 4px 14px;
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--side-muted); font-weight: 600;
+  }
+  .topics { list-style: none; margin: 0; padding: 0 0 0 10px; border-left: 1px solid rgba(255,255,255,.1); }
+  .topic-btn {
+    width: 100%; display: block; padding: 7px 10px; margin: 1px 0;
+    background: none; border: 0; border-radius: 6px;
+    color: var(--side-text); text-align: left; font-size: 14px; line-height: 1.35;
+  }
+  .topic-btn:hover { background: var(--side-hover); color: #fff; }
+  .topic-btn[aria-current="true"] { background: rgba(59,130,246,.2); color: #fff; box-shadow: inset 3px 0 0 var(--side-active); }
+
+  /* ---------- Contenido ---------- */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .content-head {
+    flex: none;
+    min-height: var(--head-h);
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 20;
+    position: relative;
+  }
+  /* Barra de progreso de lectura: borde inferior de la cabecera */
+  .read-progress { position: absolute; left: 0; right: 0; bottom: -2px; height: 4px; display: flex; gap: 4px; pointer-events: none; }
+  .read-progress .rp-cap { flex: 1 1 0; min-width: 0; height: 100%; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--muted) 28%, var(--surface)); }
+  .read-progress .rp-bar { height: 100%; width: 100%; border-radius: 999px; background: var(--accent); transform-origin: left center; transform: scaleX(0); transition: transform .12s linear; }
+  @media (prefers-reduced-motion: reduce) { .read-progress .rp-bar { transition: none; } }
+  .menu-btn {
+    display: none;
+    flex: none; width: 42px; height: 42px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    align-items: center; justify-content: center;
+  }
+  .menu-btn svg { width: 22px; height: 22px; }
+  .head-text { min-width: 0; flex: 1; }
+  .theme-btn { flex: none; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .theme-btn svg { width: 20px; height: 20px; }
+  .theme-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  @media (max-width: 899px) { .hu-t { display: none; } }
+  .head-unit { margin: 0; font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+  .head-topic { margin: 2px 0 0; font-size: 22px; line-height: 1.25; font-weight: 700; overflow-wrap: anywhere; }
+
+  .content-scroll { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+  .content-inner { max-width: 820px; margin: 0 auto; padding: 32px 28px 80px; }
+  .content-inner { position: relative; }
+  .topic-section {
+    padding: 28px 0 36px;
+    border-bottom: 1px solid var(--border);
+    min-height: 340px;
+  }
+  .topic-section:last-of-type { border-bottom: 0; }
+  .eyebrow { margin: 0 0 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .topic-section h2 { margin: 0 0 14px; font-size: 26px; line-height: 1.25; }
+  .topic-section p { margin: 0 0 14px; }
+  .topic-section ul { margin: 0 0 14px; padding-left: 22px; }
+  .topic-section li { margin: 4px 0; }
+  .mock-tag {
+    display: inline-block; margin-bottom: 12px; padding: 2px 10px;
+    border-radius: 999px; font-size: 12px; font-weight: 600;
+    background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent);
+  }
+  .mock-box {
+    margin: 0 0 14px; padding: 14px 16px; border: 1px solid var(--border);
+    border-left: 4px solid var(--accent); border-radius: 8px; background: var(--surface);
+    color: var(--muted); font-size: 15px;
+  }
+  .spacer { height: 0; }
+
+  /* ---------- Contenido real ---------- */
+  :root { --hl: #dc2626; --code-bg: #0f1623; --code-text: #e4e9f2; --cell-bg: var(--surface); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hl: #f87171; } }
+  :root[data-theme="dark"] { --hl: #f87171; }
+
+  .topic-section h3 { margin: 22px 0 8px; font-size: 18px; line-height: 1.3; }
+  .topic-section h4 { margin: 0 0 6px; font-size: 16px; }
+  .topic-section code { font: 0.92em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 1px 5px; border-radius: 4px; }
+  .topic-section ol { margin: 0 0 14px; padding-left: 22px; }
+  ul.compact li { margin: 3px 0; }
+  .source { margin: 22px 0 0 !important; font-size: 13px; color: var(--muted); }
+  .mut-p { font-size: 14px; color: var(--muted); }
+
+  .callout { margin: 0 0 16px; padding: 12px 16px; border-left: 4px solid var(--accent); border-radius: 8px; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+  .callout .ct { display: block; margin-bottom: 4px; }
+
+  dl.defs { margin: 0 0 16px; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+  dl.defs dt { font-weight: 700; }
+  dl.defs dd { margin: 0; }
+  @media (max-width: 599px) { dl.defs { grid-template-columns: 1fr; gap: 0; } dl.defs dd { margin-bottom: 10px; } }
+
+  .tbl-wrap { overflow-x: auto; margin: 0 0 16px; }
+  .tbl { border-collapse: collapse; min-width: 60%; font-size: 15px; }
+  .tbl th, .tbl td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+  .tbl th { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  .tbl td ol, .tbl td ul { margin: 0; padding-left: 18px; }
+
+  pre.code { margin: 0 0 16px; padding: 14px 16px; overflow-x: auto; background: var(--code-bg); color: var(--code-text); border-radius: 10px; font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; position: relative; }
+  pre.code[data-lang]::before { content: attr(data-lang); position: absolute; top: 6px; right: 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8b97ad; }
+  pre.code code { background: none; padding: 0; font: inherit; }
+
+  .fig { margin: 0 0 16px; text-align: center; }
+  .fig figcaption { margin-top: 6px; font-size: 14px; color: var(--muted); }
+  .figrow { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; margin-bottom: 16px; }
+  .figrow .fig { flex: 1 1 220px; margin: 0; }
+  pre.cols { display: inline-block; margin: 8px 0; text-align: left; font: 18px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  svg.gfx { width: 100%; height: auto; display: block; margin: 0 auto; }
+  .gfx .tn circle, .gfx .tn rect { fill: var(--surface); stroke: var(--text); stroke-width: 1.3; }
+  .gfx .tn text { fill: var(--text); font: 15px Georgia, serif; text-anchor: middle; }
+  .gfx .tn text.sm { font-size: 13px; }
+  .gfx .te { stroke: var(--muted); stroke-width: 1.4; }
+  .gfx .te.hl { stroke: var(--hl); stroke-width: 2.4; }
+  .gfx .mk { fill: var(--muted); } .gfx .mk.hl { fill: var(--hl); }
+  .gfx .hlbox { fill: none; stroke: var(--hl); stroke-width: 2; }
+  .gfx .gt { fill: var(--text); font: 13px system-ui, sans-serif; }
+  .gfx .gt.b { font: italic 14px Georgia, serif; }
+  .gfx .gt.mut { fill: var(--muted); font-size: 11px; }
+  .gfx .gt.ord { fill: var(--hl); font: 700 13px system-ui, sans-serif; }
+
+  .term { display: grid; grid-template-columns: 1fr; gap: 6px 22px; align-items: center; padding: 14px 0; border-top: 1px solid var(--border); }
+  .term h3 { margin: 0 0 6px; }
+  .term p { margin: 0 0 8px; }
+  .term .ej { color: var(--muted); }
+  .term-f .fig { margin: 0; }
+  @media (min-width: 700px) { .term { grid-template-columns: 1fr 340px; } }
+
+  .trav { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+  .trav > div { padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .trav p { margin-bottom: 10px; }
+  .trav ol { margin-bottom: 0; }
+  @media (min-width: 1100px) { .trav.three { grid-template-columns: repeat(3, 1fr); } }
+
+  .arr { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 14px; }
+  .arr-l { font-weight: 600; min-width: 78px; font-size: 14px; }
+  .arr-c { display: inline-flex; flex-wrap: wrap; }
+  .cell { min-width: 34px; padding: 4px 8px; text-align: center; border: 1px solid var(--border); margin-left: -1px; background: var(--cell-bg); font: 15px Georgia, serif; }
+  .cell.gl, .cell.gr { border-color: #3b82f6; }
+  .cell.cur { box-shadow: inset 0 0 0 2px var(--hl); border-radius: 50%; position: relative; z-index: 1; }
+  .cell.done { opacity: .6; text-decoration: line-through; text-decoration-color: var(--hl); text-decoration-thickness: 1.5px; }
+  .step { padding: 14px 16px; margin: 0 0 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); display: grid; grid-template-columns: 1fr; gap: 10px; align-items: center; }
+  .step svg.gfx { margin: 0; }
+  @media (min-width: 760px) { .step { grid-template-columns: 300px 1fr; } .step .stepcap { grid-column: 1 / -1; } }
+  .step .arrs .arr { margin: 4px 0 10px; }
+  .stepcap { margin: 0; font-size: 15px; color: var(--muted); }
+
+  /* Práctica interactiva de recorridos */
+  .tq { margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .tq-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .tq-score { font-weight: 600; font-size: 15px; }
+  .tq-next, .tq-opt { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .tq-next:hover, .tq-opt:hover:not(:disabled) { border-color: var(--accent); }
+  .tq-next:focus-visible, .tq-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tq-q { margin: 6px 0 10px; font-weight: 600; }
+  .tq-opts { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .tq-opt { min-width: 120px; font-weight: 600; }
+  .tq-opt:disabled { cursor: default; opacity: .75; }
+  .tq-opt.ok { opacity: 1; border-color: #16a34a; background: rgba(22,163,74,.15); }
+  .tq-opt.bad { opacity: 1; border-color: #dc2626; background: rgba(220,38,38,.15); }
+  .tq-fb:empty { display: none; }
+  .tq-fb { padding: 10px 14px; border-left: 4px solid var(--muted); border-radius: 8px; background: color-mix(in srgb, var(--muted) 8%, var(--surface)); }
+  .tq-fb.ok { border-left-color: #16a34a; background: rgba(22,163,74,.1); }
+  .tq-fb.bad { border-left-color: #dc2626; background: rgba(220,38,38,.1); }
+  .tq-all { margin-top: 10px; }
+  .tq-all p { margin-bottom: 0; font-size: 14px; color: var(--muted); }
+  .cell.ok { background: rgba(22,163,74,.2); border-color: #16a34a; }
+  .tq-tip { margin: 0 0 14px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .tq-tip summary { cursor: pointer; font-weight: 600; }
+  .tq-tip ul { margin: 8px 0; }
+
+  /* Repaso conceptual: preguntas con respuesta desplegable */
+  .qa { margin: 0 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .qa > summary { padding: 10px 14px; cursor: pointer; font-weight: 600; }
+  .qa > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
+  .qa[open] > summary { border-bottom: 1px solid var(--border); }
+  .qa-a { padding: 12px 16px 4px; }
+  .qa-nota { font-weight: 400; font-size: 13px; color: var(--muted); }
+  .qa-tools { margin: 0 0 12px; }
+  .qa-toggle { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 14px; }
+  .qa-toggle:hover { border-color: var(--accent); }
+
+  .nest { display: inline-flex; flex-direction: column; gap: 8px; padding: 22px 12px 12px; position: relative; border: 2px solid var(--border); border-radius: 18px; background: color-mix(in srgb, var(--hl) 12%, var(--surface)); text-align: left; }
+  .nest-l { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .nest > .nest-l { position: absolute; top: 4px; left: 14px; }
+  .nest-r { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--text) 10%, var(--surface)); }
+  .nest-f { padding: 3px 12px; border: 1px solid var(--hl); border-radius: 999px; background: var(--surface); font-size: 13px; }
+  .tbl code { background: none; padding: 0; font-size: 13px; }
+
+  .fig.flow { text-align: left; margin: 0 0 22px; }
+  .imgbox { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center; }
+  .imgbox img { max-width: 100%; height: auto; max-height: 720px; }
+  .fig.flow figcaption { text-align: center; }
+  details.transc { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  details.transc > summary { cursor: pointer; padding: 9px 14px; font-weight: 600; font-size: 15px; }
+  details.transc > :not(summary) { margin-left: 14px; margin-right: 14px; }
+  details.transc > :last-child { margin-bottom: 14px; }
+  details.transc pre.code { margin-bottom: 0; }
+  .steps5 { counter-reset: st; list-style: none; padding: 0; margin: 0 0 16px; }
+  .steps5 li { counter-increment: st; position: relative; padding: 12px 14px 12px 54px; margin: 0 0 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .steps5 li::before { content: counter(st); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 700; }
+  .steps5 li small { display: block; color: var(--muted); margin-top: 4px; }
+  .chip { display: inline-block; padding: 5px 16px; border-radius: 10px; color: #fff; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,.25); white-space: nowrap; }
+  .c-gray { background: #8f949c; } .c-dark { background: #5f6368; } .c-brown { background: #7a5c60; }
+  .c-mauve { background: #86575a; } .c-wine { background: #7a2a2f; } .c-red { background: #8b1111; }
+  .c-light { background: #d4d6da; color: #a11; }
+  .chips { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .concept { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: start; padding: 12px 0; border-top: 1px solid var(--border); }
+  .concept .chip { justify-self: start; }
+  .concept p { margin: 0 0 6px; }
+  @media (max-width: 599px) { .concept { grid-template-columns: 1fr; gap: 8px; } }
+  .listbox { display: inline-block; text-align: left; padding: 10px 18px; border: 1.5px solid var(--text); background: var(--surface); }
+  .listbox > strong { display: block; text-align: center; border-bottom: 1px solid var(--text); margin-bottom: 6px; }
+  .listbox ul { margin: 0 0 6px 22px; padding: 0; list-style: none; }
+  .listbox .lb-h { display: block; }
+  ol.compact { padding-left: 22px; } ol.compact ol, ol.compact ul { margin: 4px 0; }
+  .uml { display: inline-block; vertical-align: top; margin: 0 14px 10px 0; min-width: 190px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+  .uml b { display: block; padding: 6px 10px; text-align: center; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); border-bottom: 1px solid var(--border); }
+  .uml span { display: block; padding: 2px 10px; font-size: 14px; }
+  .uml span:last-child { padding-bottom: 8px; }
+
+  .backdrop { display: none; }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 899px) {
+    .menu-btn { display: inline-flex; }
+    .content-head { padding: 10px 16px; }
+    .head-topic { font-size: 18px; }
+    .content-inner { padding: 22px 16px 64px; }
+
+    .sidebar {
+      position: fixed; top: 0; bottom: 0; left: 0;
+      width: min(86vw, 330px);
+      transform: translateX(-100%);
+      transition: transform .28s ease;
+      box-shadow: none;
+      visibility: hidden;
+    }
+    body.menu-open .sidebar {
+      transform: translateX(0);
+      visibility: visible;
+      box-shadow: 6px 0 30px rgba(0,0,0,.35);
+    }
+    .backdrop {
+      display: block; position: fixed; inset: 0; z-index: 25;
+      background: rgba(0,0,0,.45);
+      opacity: 0; pointer-events: none; transition: opacity .28s ease;
+    }
+    body.menu-open .backdrop { opacity: 1; pointer-events: auto; }
+  }
+  @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+    .sidebar, .backdrop { transition: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .content-scroll { scroll-behavior: auto; }
+    .unit-btn .chev { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Unidades y temas">
+    <div class="brand">
+      <small>Resumen de cursada</small>
+      <strong>Programación y Estructuras de Datos</strong>
+      <span class="credit">Material de la cátedra · Autor de contenidos: Mg. Nicolás Battaglia</span>
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
+
+  <div class="main">
+    <header class="content-head">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="head-text">
+        <p class="head-unit" id="headUnit">Unidad</p>
+        <h1 class="head-topic" id="headTopic">Tema</h1>
+      </div>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <div class="read-progress" id="readProgress" role="progressbar" aria-label="Progreso de lectura por unidad" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+    </header>
+
+    <div class="content-scroll" id="scroll">
+      <div class="content-inner">
+        <div id="sections"></div>
+        <div class="spacer" id="spacer" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="contenido/helpers.js?v=6"></script>
+<script src="contenido/unidad-3.js?v=20"></script>
+<script src="contenido/unidad-4.js?v=23"></script>
+<script src="contenido/unidad-5.js?v=20"></script>
+<script src="contenido/unidad-6.js?v=20"></script>
+<script src="contenido/unidad-7.js?v=3"></script>
+<script>
+/* Índice real. Se reutiliza en las etapas siguientes. */
+const UNITS = [
+  { n: 3, title: 'Estructuras Dinámicas II', subtitle: 'Árboles', groups: [
+    { title: 'Clase 8 · Árboles #1', topics: [
+      'Definición de árbol',
+      'Representaciones: grafo y diagrama en columnas',
+      'Árboles AVL: balanceo, factor de equilibrio y rotaciones',
+      'Nomenclatura de árboles',
+      'Árboles binarios',
+      'Recorridos: profundidad (preorden, inorden, postorden) y amplitud' ] },
+    { title: 'Clase 9 · Árboles #2', topics: [
+      'Creación de un árbol binario',
+      'Árbol binario de búsqueda (ABB)',
+      'Práctica: ¿qué recorrido es?' ] } ] },
+  { n: 4, title: 'Archivos', subtitle: 'Clase 10', groups: [
+    { title: null, topics: [
+      'Introducción y concepto de archivo',
+      'Ventajas y desventajas de usar archivos',
+      'Clasificación y tipos de archivos',
+      'Campos de un registro',
+      'Archivos secuenciales e indexados',
+      'System.IO: File, FileStream, StreamReader y StreamWriter',
+      'FileMode y FileAccess',
+      'StreamReader: lectura de archivos',
+      'StreamWriter: escritura de archivos',
+      'File.Create, FileOptions y File.Exists',
+      'Archivos binarios: BinaryReader y BinaryWriter',
+      'La clase Stream' ] } ] },
+  { n: 5, title: 'Corte de Control y Apareo de Archivos', subtitle: 'Clases 11 y 12', groups: [
+    { title: 'Clase 11 · Corte de control', topics: [
+      'Introducción y definición',
+      'Usos del corte de control',
+      'Definiciones: control, corte y campo de control',
+      'Otro ejemplo y requisitos',
+      'Metodología paso a paso',
+      'Resumen: EOF, corte simple y compuesto',
+      'Ejemplo completo: bancos, sucursales y cuentas',
+      'Recordar finalmente' ] },
+    { title: 'Clase 12 · Apareo de archivos', topics: [
+      'Apareo de dos archivos: igual, menor y mayor',
+      'Ejemplo: alumnos y notas',
+      'Archivo maestro y novedades',
+      'Apareo de un archivo secuencial y uno indexado',
+      'Resumen general' ] } ] },
+  { n: 6, title: 'Estilos de Programación', subtitle: 'Clase 13', groups: [
+    { title: null, topics: [
+      '¿Qué es un paradigma de programación?',
+      'Modularidad y recursividad',
+      'Paradigma lógico',
+      'Paradigma estructurado',
+      'Paradigma orientado a objetos',
+      'Paradigma orientado a eventos' ] } ] },
+  { n: 7, title: 'Repaso conceptual', subtitle: 'Preguntas de revisión', groups: [
+    { title: null, topics: [
+      'Repaso de árboles',
+      'Repaso de archivos',
+      'Repaso de corte de control y apareo',
+      'Repaso de paradigmas de programación' ] } ] }
+];
+
+const $ = (s, r = document) => r.querySelector(s);
+const nav = $('#nav');
+const headUnit = $('#headUnit');
+const headTopic = $('#headTopic');
+const menuBtn = $('#menuBtn');
+const mq = window.matchMedia('(max-width: 899px)');
+
+/* ----- Construcción de la barra ----- */
+UNITS.forEach((u, ui) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'unit';
+  wrap.dataset.unit = ui;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'unit-btn';
+  btn.id = 'unit-btn-' + ui;
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('aria-controls', 'unit-panel-' + ui);
+  btn.innerHTML =
+    '<span class="num">' + u.n + '</span>' +
+    '<span class="label">Unidad ' + u.n + ': ' + u.title + '<small>' + u.subtitle + '</small></span>' +
+    '<svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+
+  const panel = document.createElement('div');
+  panel.className = 'unit-panel';
+  panel.id = 'unit-panel-' + ui;
+  panel.setAttribute('role', 'region');
+  panel.setAttribute('aria-labelledby', btn.id);
+
+  u.groups.forEach((g, gi) => {
+    if (g.title) {
+      const h = document.createElement('div');
+      h.className = 'group-title';
+      h.textContent = g.title;
+      panel.appendChild(h);
+    }
+    const ul = document.createElement('ul');
+    ul.className = 'topics';
+    g.topics.forEach((t, ti) => {
+      const li = document.createElement('li');
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'topic-btn';
+      b.dataset.unit = ui; b.dataset.group = gi; b.dataset.topic = ti;
+      b.textContent = t;
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    panel.appendChild(ul);
+  });
+
+  wrap.append(btn, panel);
+  nav.appendChild(wrap);
+});
+
+/* ----- Secciones de contenido (ETAPA 2: texto de ejemplo, títulos reales) ----- */
+const LOREM = [
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio praesent libero, sed cursus ante dapibus diam. Sed nisi nulla quis sem at nibh elementum imperdiet.',
+  'Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa vestibulum lacinia arcu eget nulla, class aptent taciti sociosqu ad litora torquent per conubia nostra.',
+  'Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor pellentesque nibh. Aenean quam in scelerisque sem at dolor maecenas mattis sed convallis tristique sem.',
+  'Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa. Fusce ac turpis quis ligula lacinia aliquet mauris ipsum.'
+];
+const sectionsEl = $('#sections');
+const sectionEls = [];
+let secCount = 0;
+UNITS.forEach((u, ui) => u.groups.forEach((g, gi) => g.topics.forEach((t, ti) => {
+  const s = document.createElement('section');
+  s.className = 'topic-section';
+  s.id = 'u' + u.n + '-g' + gi + '-t' + ti;
+  s.dataset.unit = ui; s.dataset.group = gi; s.dataset.topic = ti;
+  const n = secCount++;
+  const paras = [0, 1, 2].map(k => '<p>' + LOREM[(n + k) % LOREM.length] + '</p>').join('');
+  const extra = n % 2 === 0
+    ? '<ul><li>Punto de ejemplo uno</li><li>Punto de ejemplo dos</li><li>Punto de ejemplo tres</li></ul>'
+    : '<div class="mock-box">Aquí irá un ejemplo, una tabla o un bloque de código del tema.</div>';
+  const real = window.CONTENT && CONTENT[s.id];
+  s.innerHTML =
+    '<p class="eyebrow">Unidad ' + u.n + (g.title ? ' · ' + g.title : '') + '</p>' +
+    '<h2>' + t + '</h2>' +
+    (real ? real()
+          : '<span class="mock-tag">Contenido de ejemplo</span>' + paras + extra + '<p>' + LOREM[(n + 3) % LOREM.length] + '</p>');
+  sectionsEl.appendChild(s);
+  sectionEls.push(s);
+})));
+
+/* ----- Scroll: sincroniza cabecera y barra con el tema visible ----- */
+const scroller = $('#scroll');
+const spacer = $('#spacer');
+const SPY_LINE = 0.5;           // el tema activo es el que cruza esta línea: 0.5 = centro del panel de contenido
+let activeSection = null;
+let lockedId = null;            // tema elegido con un clic o enlace: se mantiene hasta que la persona vuelva a scrollear
+
+function updateSpacer() {
+  // Permite que el último tema pueda llegar al tope del panel
+  const last = sectionEls[sectionEls.length - 1];
+  spacer.style.height = Math.max(0, scroller.clientHeight - last.offsetHeight) + 'px';
+}
+
+function setActive(cur) {
+  if (cur === activeSection) return;
+  activeSection = cur;
+  selectTopic(+cur.dataset.unit, +cur.dataset.group, +cur.dataset.topic);
+  if (location.hash !== '#' + cur.id) history.replaceState(null, '', '#' + cur.id);
+}
+
+function spy() {
+  if (lockedId) return;                                   // hay un tema elegido por clic: no lo pisa el scroll automático
+  const line = scroller.getBoundingClientRect().top + scroller.clientHeight * SPY_LINE;
+  let cur = sectionEls[0];
+  for (const s of sectionEls) {
+    if (s.getBoundingClientRect().top <= line) cur = s; else break;
+  }
+  setActive(cur);
+}
+
+// Cualquier scroll hecho por la persona (rueda, dedo, teclado, barra de scroll) libera el tema elegido por clic
+const unlock = () => { lockedId = null; };
+['wheel', 'touchstart', 'pointerdown'].forEach(ev => scroller.addEventListener(ev, unlock, { passive: true }));
+window.addEventListener('keydown', e => {
+  if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(e.key)) unlock();
+});
+/* Barra de progreso: una cápsula por unidad, todas del mismo ancho.
+   Cada cápsula se llena según lo recorrido dentro de su unidad (del primer tema de la unidad al primero de la siguiente). */
+const rpEl = $('#readProgress');
+const rpBars = UNITS.map(u => {
+  const cap = document.createElement('div');
+  cap.className = 'rp-cap';
+  cap.title = 'Unidad ' + u.n + ' · ' + u.title;
+  cap.innerHTML = '<div class="rp-bar"></div>';
+  rpEl.appendChild(cap);
+  return cap.firstChild;
+});
+let rpStarts = [];
+function measureProgress() {
+  const base = scroller.getBoundingClientRect().top - scroller.scrollTop;
+  rpStarts = UNITS.map((u, ui) => {
+    if (ui === 0) return 0;
+    const first = sectionEls.find(s => +s.dataset.unit === ui);
+    return first ? first.getBoundingClientRect().top - base : 0;
+  });
+}
+function updateProgress() {
+  const max = scroller.scrollHeight - scroller.clientHeight;
+  const y = scroller.scrollTop;
+  rpBars.forEach((bar, i) => {
+    const from = rpStarts[i] || 0;
+    const to = i + 1 < rpStarts.length ? rpStarts[i + 1] : max;
+    const p = to > from ? Math.min(1, Math.max(0, (y - from) / (to - from))) : (y >= from ? 1 : 0);
+    bar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+  });
+  rpEl.setAttribute('aria-valuenow', String(max > 0 ? Math.round(Math.min(1, y / max) * 100) : 0));
+}
+let ticking = false;
+scroller.addEventListener('scroll', () => {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { ticking = false; spy(); updateProgress(); });
+}, { passive: true });
+
+function scrollToSection(id, smooth) {
+  const s = document.getElementById(id);
+  if (!s) return;
+  lockedId = id;           // el tema elegido queda resaltado aunque no alcance a llegar al centro
+  setActive(s);
+  const delta = s.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+  scroller.scrollTo({ top: scroller.scrollTop + delta, behavior: smooth ? 'smooth' : 'auto' });
+}
+window.addEventListener('resize', () => { updateSpacer(); measureProgress(); spy(); updateProgress(); });
+window.addEventListener('load', () => { measureProgress(); updateProgress(); });
+if (window.ResizeObserver) new ResizeObserver(() => { measureProgress(); updateProgress(); }).observe(document.querySelector('.content-inner')); // el contenido cambia de alto (respuestas desplegables, práctica)
+measureProgress();
+updateProgress();
+
+/* ----- Acordeón de unidades y clic en temas ----- */
+nav.addEventListener('click', e => {
+  const ub = e.target.closest('.unit-btn');
+  if (ub) {
+    ub.setAttribute('aria-expanded', ub.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');
+    return;
+  }
+  const tb = e.target.closest('.topic-btn');
+  if (tb) {
+    const u = UNITS[+tb.dataset.unit];
+    scrollToSection('u' + u.n + '-g' + tb.dataset.group + '-t' + tb.dataset.topic, true);
+    if (mq.matches) setMenu(false);
+  }
+});
+
+/* ----- Selección de tema: actualiza barra y cabecera fija ----- */
+function selectTopic(ui, gi, ti) {
+  const u = UNITS[ui];
+  const t = u.groups[gi].topics[ti];
+  nav.querySelectorAll('.topic-btn[aria-current]').forEach(b => b.removeAttribute('aria-current'));
+  nav.querySelectorAll('.unit.current').forEach(w => w.classList.remove('current'));
+  const btn = nav.querySelector('.topic-btn[data-unit="' + ui + '"][data-group="' + gi + '"][data-topic="' + ti + '"]');
+  btn.setAttribute('aria-current', 'true');
+  btn.closest('.unit').classList.add('current');
+  $('#unit-btn-' + ui).setAttribute('aria-expanded', 'true');
+  // Mantiene el tema activo visible dentro de la barra lateral
+  const nr = nav.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  if (br.top < nr.top + 8) nav.scrollTop -= (nr.top + 8 - br.top);
+  else if (br.bottom > nr.bottom - 8) nav.scrollTop += (br.bottom - nr.bottom + 8);
+  const g = u.groups[gi].title;
+  // El nombre largo de la unidad se oculta en mobile (queda "Unidad N · Clase")
+  headUnit.innerHTML = 'Unidad ' + u.n + '<span class="hu-t"> · ' + u.title + '</span>' + (g ? ' · ' + g : '');
+  headTopic.textContent = t;
+  document.title = t + ' — Programación y Estructuras de Datos';
+}
+
+/* ----- Menú mobile ----- */
+function setMenu(open) {
+  document.body.classList.toggle('menu-open', open);
+  menuBtn.setAttribute('aria-expanded', String(open));
+  menuBtn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+}
+menuBtn.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+$('#backdrop').addEventListener('click', () => setMenu(false));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+mq.addEventListener('change', () => setMenu(false));
+
+/* ----- Tema claro / oscuro (recuerda la elección; sin preferencia, sigue al sistema) ----- */
+const root = document.documentElement;
+const darkMq = window.matchMedia('(prefers-color-scheme: dark)');
+try { const saved = localStorage.getItem('theme'); if (saved === 'light' || saved === 'dark') root.dataset.theme = saved; } catch (e) {}
+$('#themeBtn').addEventListener('click', () => {
+  const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : darkMq.matches;
+  const next = isDark ? 'light' : 'dark';
+  root.dataset.theme = next;
+  try { localStorage.setItem('theme', next); } catch (e) {}
+});
+
+/* Estado inicial: respeta #hash si existe; si no, primer tema */
+updateSpacer();
+const initial = location.hash.slice(1);
+if (initial && document.getElementById(initial)) scrollToSection(initial, false);
+spy();
+</script>
+</body>
+</html>

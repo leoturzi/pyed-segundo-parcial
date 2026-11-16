@@ -42,24 +42,24 @@
       [{ h: '<strong>Entrada</strong>' }, 'Lectura de datos', { h: '<ol class="compact"><li>Se crea un flujo de datos de lectura.</li><li>Se leen datos con los métodos apropiados.</li><li>Se cierra el flujo de datos.</li></ol>' }],
       [{ h: '<strong>Salida</strong>' }, 'Escritura de datos', { h: '<ol class="compact"><li>Se crea un objeto flujo de datos de escritura.</li><li>Se escriben datos utilizando los métodos apropiados.</li><li>Se cierra el flujo de datos.</li></ol>' }],
       [{ h: '<strong>Entrada/Salida</strong>' }, 'Lectura y escritura de datos', '—']
-    ])}
+    ], 'stack')}
     <h3>Según su uso</h3>
     ${table(['Clase', 'Descripción'], [
       [{ h: '<strong>Permanentes</strong>' }, 'Los datos guardados en ellos cambian poco en el tiempo; generalmente se usan para estadísticas y cumplen una función de soporte o complemento.'],
       [{ h: '<strong>De movimiento</strong>' }, 'Son los archivos tradicionales, donde el sistema realiza las actualizaciones constantes.'],
       [{ h: '<strong>Temporales</strong>' }, 'Se crean solo cuando se usan y luego se destruyen.']
-    ])}
+    ], 'stack')}
     <h3>Según los datos cargados</h3>
     ${table(['Clase', 'Descripción'], [
       [{ h: '<strong>Texto plano</strong>' }, 'Están compuestos únicamente por texto sin formato, solo caracteres. Estos caracteres se pueden codificar de distintos modos, dependiendo de la lengua usada.'],
       [{ h: '<strong>Binario</strong>' }, 'Es un archivo informático que contiene información de cualquier tipo, codificada en forma binaria para el propósito de almacenamiento y procesamiento de ordenadores.']
-    ])}
+    ], 'stack')}
     <h3>Según el tipo de acceso</h3>
     ${table(['Clase', 'Descripción'], [
       [{ h: '<strong>Acceso secuencial</strong>' }, 'Está diseñado para utilizarlo con archivos de texto sin formato. Se considera que cada carácter de un archivo representa un carácter de texto o una secuencia de formato de texto, como un carácter de nueva línea. Los datos se almacenan como caracteres ANSI.'],
       [{ h: '<strong>Acceso aleatorio</strong>' }, 'Un archivo abierto para acceso aleatorio se considera compuesto por un conjunto de registros de longitud idéntica, o de conjuntos de campos que contienen información. Se pueden utilizar tipos definidos por el usuario para crear registros compuestos por numerosos campos, cada uno de los cuales puede tener diferentes tipos de datos. Los datos se almacenan como información binaria.'],
       [{ h: '<strong>Acceso binario</strong>' }, 'Permite utilizar archivos para almacenar datos de cualquier modo que se ajuste a las necesidades, ya sean numéricos, de cadena o ambos. Es similar al aleatorio, excepto que no se hacen suposiciones acerca del tipo de datos o de la longitud de registro. Es necesario conocer cómo se escribieron exactamente los datos en el archivo para poder recuperarlos correctamente. Por ejemplo, si almacena una serie de nombres y números de teléfono, debe recordar que el primer campo (el nombre) es texto y el segundo (el número de teléfono) es numérico.']
-    ])}
+    ], 'stack')}
     <h3>Comparación de los tres accesos</h3>
     ${table(['', 'Secuencial', 'Aleatorio (<em>Random</em>)', 'Binario'].map(x => ({ h: x })), [
       ['Longitud de registro', 'Variable', 'Fija', 'Variable'],

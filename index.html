@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Programación y Estructuras de Datos</title>
 <style>
   :root {
@@ -46,6 +46,7 @@
     overflow: hidden;
   }
   button { font: inherit; color: inherit; cursor: pointer; }
+  html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }  /* sin zoom por doble toque */
   :focus-visible { outline: 2px solid var(--side-active); outline-offset: 2px; }
 
   .app { display: flex; height: 100dvh; }

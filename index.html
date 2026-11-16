@@ -332,6 +332,7 @@
 
   /* ---------- Pie fijo: navegación entre temas ---------- */
   .foot-nav { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 28px calc(8px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--border); z-index: 20; }
+  .foot-nav, .fn-btn { touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
   .fn-btn { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 14px; line-height: 1.25; text-align: left; }
   .fn-btn:hover:not(:disabled) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
   .fn-btn:disabled { opacity: .4; cursor: default; }
@@ -757,6 +758,13 @@ function updateFooter(ui, gi, ti) {
   fnNext.dataset.go = sectionEls[i + 1] ? sectionEls[i + 1].id : '';
 }
 [fnPrev, fnNext].forEach(b => b.addEventListener('click', () => { if (b.dataset.go) scrollToSection(b.dataset.go, true); }));
+/* Toques rápidos sobre los botones: el navegador no hace zoom y cada toque cuenta como un clic */
+document.getElementById('footNav').addEventListener('touchend', e => {
+  e.preventDefault();
+  const b = e.target.closest('.fn-btn');
+  if (b && !b.disabled) b.click();
+}, { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
 
 /* Estado inicial: respeta #hash si existe; si no, primer tema */
 updateSpacer();

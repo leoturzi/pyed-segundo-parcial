@@ -189,8 +189,9 @@
   @media (max-width: 599px) { dl.defs { grid-template-columns: 1fr; gap: 0; } dl.defs dd { margin-bottom: 10px; } }
 
   .tbl-wrap { overflow-x: auto; margin: 0 0 16px; }
-  .tbl { border-collapse: collapse; min-width: 60%; font-size: 15px; }
-  .tbl th, .tbl td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+  .tbl-wrap { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
+  .tbl { border-collapse: collapse; width: max-content; min-width: 60%; font-size: 15px; overflow-wrap: normal; word-break: normal; }
+  .tbl th, .tbl td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; min-width: 110px; max-width: 340px; overflow-wrap: normal; word-break: normal; }
   .tbl th { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
   .tbl td ol, .tbl td ul { margin: 0; padding-left: 18px; }
 
